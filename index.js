@@ -38,6 +38,7 @@ async function run() {
 
     const productCollection = client.db("fragrance").collection("products");
     const cartCollection = client.db("fragrance").collection("cart");
+    const orderCollection = client.db("fragrance").collection("order-list");
 
     //get products
     app.get("/products", async (req, res) => {
@@ -47,44 +48,18 @@ async function run() {
       res.send(result);
     });
 
-    //get cart
-    app.get("/cart", async (req, res) => {
+    // post order list
+    app.post("/order", async (req, res) => {
+      const orderList = req.body;
+      const result = await orderCollection.insertOne(orderList);
+      res.send(result);
+    });
+
+    // get order list
+    app.get("/order", async (req, res) => {
       const query = {};
-      const cursor = cartCollection.find(query);
+      const cursor = orderCollection.find(query);
       const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    //post product to cart
-    app.post("/cart", async (req, res) => {
-      const cartProduct = req.body;
-      const result = await cartCollection.insertOne(cartProduct);
-      res.send(result);
-    });
-
-    //update cart product
-    app.put("/cart", async (req, res) => {
-      const updatedProduct = req.body;
-      const id = updatedProduct._id;
-      const filter = { _id: id };
-      const options = { upsert: true };
-      const updatedDoc = {
-        $set: {
-          quantity: updatedProduct.quantity,
-        },
-      };
-      const result = await cartCollection.updateOne(
-        filter,
-        updatedDoc,
-        options
-      );
-      res.send(result);
-    });
-    //delete cart product
-    app.delete("/cart", async (req, res) => {
-      const id = req.body._id;
-      const query = { _id: id };
-      const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
   } finally {
